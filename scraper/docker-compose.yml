@@ -1,0 +1,27 @@
+version: '3.8'
+services:
+  scraper-service:
+    build:
+      context: ~/orchestrator/services/scraper
+      dockerfile: Dockerfile
+    ports:
+      - "8088:8000"
+    environment:
+      - PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+    volumes:
+      - ~/orchestrator/scraper-cache:/cache
+    networks:
+      - orchestrator-network
+    deploy:
+      resources:
+        limits:
+          memory: 1500M
+        reservations:
+          memory: 800M
+    restart: unless-stopped
+
+networks:
+  orchestrator-network:
+    name: orchestrator-network
+    external: true
+

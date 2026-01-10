@@ -1,0 +1,33 @@
+version: '3.8'
+services:
+  postgres-main:
+    image: postgres:17.6-alpine
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_PASSWORD=Mart436780
+      - POSTGRES_USER=postgres
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - /home/gg/orchestrator/postgresql-data:/var/lib/postgresql/data
+      - /home/gg/orchestrator/transfer-from-windows/postgresql-dump:/dumps:ro
+    networks:
+      - orchestrator-network
+    shm_size: 256mb
+    deploy:
+      resources:
+        limits:
+          memory: 1024M
+        reservations:
+          memory: 512M
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  orchestrator-network:
+    name: orchestrator-network
+    external: true

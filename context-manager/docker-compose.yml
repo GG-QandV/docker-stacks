@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  context-manager:
+    build: .
+    container_name: context-manager
+    ports:
+      - "3001:3001"
+    environment:
+      - DATABASE_URL=postgresql://postgres:Mart436780@host.docker.internal:5433/context_db
+      - WEAVIATE_URL=http://host.docker.internal:8087
+      - NODE_ENV=production
+      - PORT=3001
+    networks:
+      - orchestrator-network
+    volumes:
+      - ~/orchestrator/context-data:/app/data
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider -q http://localhost:3001/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+
+networks:
+  orchestrator-network:
+    name: orchestrator-network
+    external: true

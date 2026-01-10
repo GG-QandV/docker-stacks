@@ -1,0 +1,104 @@
+{
+  "deprecations": null,
+  "objects": [
+    {
+      "class": "DevelopmentContext",
+      "creationTimeUnix": 1768072249982,
+      "id": "3e118c18-3c01-43d7-912d-94e3e0fe372b",
+      "lastUpdateTimeUnix": 1768072249982,
+      "properties": {
+        "content": "This is an integration test for the Context Manager API. Testing PostgreSQL and Weaviate synchronization for the petsafe-validator project.",
+        "contextType": "test",
+        "projectId": "petsafe-validator",
+        "sessionId": "session-test-integration-001",
+        "syncId": "1768068577595-g8jh4ere5",
+        "tags": [
+          "test",
+          "integration",
+          "context-manager"
+        ],
+        "timestamp": "2026-01-10T18:09:37.602Z"
+      },
+      "vectorWeights": null
+    },
+    {
+      "class": "DevelopmentContext",
+      "creationTimeUnix": 1768072102239,
+      "id": "405fc895-c628-48db-b31a-611643c4930d",
+      "lastUpdateTimeUnix": 1768072102239,
+      "properties": {
+        "content": "Test context entry",
+        "contextType": "test",
+        "projectId": "petsafe-validator",
+        "sessionId": "session-test-001",
+        "syncId": "1768072102212-6nxj9nwgj",
+        "tags": [
+          "test"
+        ],
+        "timestamp": "2026-01-10T19:08:22.236Z"
+      },
+      "vectorWeights": null
+    },
+    {
+      "class": "DevelopmentContext",
+      "creationTimeUnix": 1768071997143,
+      "id": "8850e8ac-51e0-49d8-9933-da982775ee00",
+      "lastUpdateTimeUnix": 1768071997143,
+      "properties": {
+        "content": "This is an integration test for the Context Manager API. Testing PostgreSQL and Weaviate synchronization for the petsafe-validator project.",
+        "contextType": "test",
+        "projectId": "petsafe-validator",
+        "sessionId": "session-test-integration-001",
+        "syncId": "1768068544381-go8hnrxh4",
+        "tags": [
+          "test",
+          "integration",
+          "context-manager"
+        ],
+        "timestamp": "2026-01-10T18:09:04.388Z"
+      },
+      "vectorWeights": null
+    },
+    {
+      "class": "DevelopmentContext",
+      "creationTimeUnix": 1768071997125,
+      "id": "b07af395-ae63-4701-99e2-023ba04e4147",
+      "lastUpdateTimeUnix": 1768071997125,
+      "properties": {
+        "content": "This is an integration test for the Context Manager API. Testing PostgreSQL and Weaviate synchronization for the petsafe-validator project.",
+        "contextType": "test",
+        "projectId": "petsafe-validator",
+        "sessionId": "session-test-integration-001",
+        "syncId": "1768068525490-txptjpdpt",
+        "tags": [
+          "test",
+          "integration",
+          "context-manager"
+        ],
+        "timestamp": "2026-01-10T18:08:45.498Z"
+      },
+      "vectorWeights": null
+    },
+    {
+      "class": "DevelopmentContext",
+      "creationTimeUnix": 1768072249970,
+      "id": "c3f12f84-7c30-468d-9d16-cb154abeca26",
+      "lastUpdateTimeUnix": 1768072249970,
+      "properties": {
+        "content": "This is a test context entry for petsafe-validator project. Testing PostgreSQL connection and schema.",
+        "contextType": "test",
+        "projectId": "petsafe-validator",
+        "sessionId": "session-test-001",
+        "syncId": "test-sync-001",
+        "tags": [
+          "test",
+          "setup",
+          "postgresql"
+        ],
+        "timestamp": "2026-01-10T17:42:18.941Z"
+      },
+      "vectorWeights": null
+    }
+  ],
+  "totalResults": 5
+}

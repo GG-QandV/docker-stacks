@@ -1,0 +1,42 @@
+version: '3.8'
+services:
+  langgraph-redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: redis-cli ping
+      interval: 5s
+      timeout: 1s
+      retries: 5
+    networks:
+      - orchestrator-network
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  langgraph-api:
+    image: langchain/langgraph-api:latest
+    ports:
+      - "8124:8000"
+    depends_on:
+      langgraph-redis:
+        condition: service_healthy
+    environment:
+      - REDIS_URI=redis://langgraph-redis:6379
+      - POSTGRES_URI=postgresql://postgres:postgres@host.docker.internal:5433/langgraph_db
+      - LANGSMITH_API_KEY=${LANGSMITH_API_KEY}
+      - LANGSMITH_TRACING=false
+    networks:
+      - orchestrator-network
+    deploy:
+      resources:
+        limits:
+          memory: 1024M
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+networks:
+  orchestrator-network:
+    name: orchestrator-network
+    external: true

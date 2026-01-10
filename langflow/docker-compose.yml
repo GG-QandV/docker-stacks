@@ -1,0 +1,30 @@
+version: '3.8'
+services:
+  langflow:
+    image: langflowai/langflow:1.0.19.post2  # Откат с latest
+    ports:
+      - "8082:7860"
+    environment:
+      - LANGFLOW_HOST=0.0.0.0
+      - LANGFLOW_PORT=7860
+      - LANGFLOW_DATABASE_URL=postgresql://langflow_user:langflow_secure_pass@host.docker.internal:5433/langflow_db
+    volumes:
+      - ~/orchestrator/langflow:/app/langflow-data
+      - ~/orchestrator/models:/app/models:ro
+    networks:
+      - orchestrator-network
+    deploy:
+      resources:
+        limits:
+          memory: 1200M
+        reservations:
+          memory: 800M
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+networks:
+  orchestrator-network:
+    name: orchestrator-network
+    driver: bridge
+

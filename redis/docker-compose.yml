@@ -1,0 +1,28 @@
+version: '3.8'
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - ~/orchestrator/redis-data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - orchestrator-network
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+networks:
+  orchestrator-network:
+    name: orchestrator-network
+    external: true

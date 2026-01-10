@@ -1,0 +1,30 @@
+version: '3.8'
+services:
+  weaviate-new:
+    image: semitechnologies/weaviate:latest
+    ports:
+      - "8087:8080"
+    environment:
+      - QUERY_DEFAULTS_LIMIT=25
+      - AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED=true
+      - PERSISTENCE_DATA_PATH=/var/lib/weaviate
+      - DEFAULT_VECTORIZER_MODULE=none
+      - ENABLE_MODULES=text2vec-openai,text2vec-huggingface
+      - CLUSTER_HOSTNAME=node1
+    volumes:
+      - ~/orchestrator/weaviate-new-data:/var/lib/weaviate
+    networks:
+      - orchestrator-network
+    deploy:
+      resources:
+        limits:
+          memory: 800M
+        reservations:
+          memory: 500M
+    restart: unless-stopped
+
+networks:
+  orchestrator-network:
+    name: orchestrator-network
+    external: true
+

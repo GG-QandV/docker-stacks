@@ -1,0 +1,28 @@
+version: '3.8'
+services:
+  telegram-bot:
+    build:
+      context: ~/orchestrator/project/telegram-bot
+      dockerfile: Dockerfile
+    ports:
+      - "8089:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - DATABASE_URL=postgresql://bot_user:bot_pass@host.docker.internal:5432/bot_db
+      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
+      - WEBHOOK_URL=${WEBHOOK_URL}
+      - LANGGRAPH_URL=http://host.docker.internal:8000
+    volumes:
+      - ~/orchestrator/bot-data:/app/data
+    networks:
+      - orchestrator-network  
+    mem_limit: "400m"
+    mem_reservation: "250m"
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+networks:
+  orchestrator-network:
+    external: false
