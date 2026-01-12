@@ -17,9 +17,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1024M
+          memory: 300M
         reservations:
-          memory: 512M
+          memory: 300M
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]

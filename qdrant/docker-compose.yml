@@ -1,6 +1,7 @@
-version: '3.8'
+
 services:
   qdrant-new:
+    container_name: qdrant-new
     image: qdrant/qdrant:latest
     ports:
       - "6334:6333"  # HTTP API
@@ -12,9 +13,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 900M
+          memory: 400M
         reservations:
-          memory: 600M
+          memory: 200M
     restart: unless-stopped
 
 networks:
