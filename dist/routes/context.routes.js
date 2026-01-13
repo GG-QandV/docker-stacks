@@ -34,6 +34,7 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.contextRoutes = contextRoutes;
+const contentDetector_service_1 = require("../services/contentDetector.service");
 const postgres_service_1 = require("../services/postgres.service");
 const qdrant_service_1 = require("../services/qdrant.service");
 const context_schema_1 = require("../schemas/context.schema"); // Убедитесь, что тут стоит };
@@ -46,8 +47,10 @@ async function contextRoutes(fastify) {
     }, async (request, reply) => {
         const body = request.body;
         const syncId = postgres_service_1.postgresService.generateSyncId();
+        const detectedTypes = contentDetector_service_1.contentDetector.detectTypes(body.content || "");
         // Save to PostgreSQL first
-        const { id } = await postgres_service_1.postgresService.createContext(body, syncId);
+        const contextData = { ...body, content_types: detectedTypes };
+        const { id } = await postgres_service_1.postgresService.createContext(contextData, syncId);
         // ЗАМЕНА ТУТ (теперь синхронизируем с Qdrant):
         try {
             await qdrant_service_1.qdrantService.createContext(body, syncId);

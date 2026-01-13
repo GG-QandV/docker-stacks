@@ -1,3 +1,4 @@
+import { SaveContextBody } from "../schemas/context.schema";
 export declare const LOGICAL_SECTIONS: readonly ["backend", "frontend", "database", "admin-panel", "shared", "infrastructure", "testing", "documentation", "deployment", "staging", "production", "monitoring", "logging", "scaling", "backup", "disaster-recovery", "marketing", "promotion", "sales", "branding", "content", "social-media", "email-marketing", "referral", "affiliate", "ambassador", "product", "features", "roadmap", "feedback", "analytics", "growth", "retention", "churn", "optimization", "experimentation", "customers", "users", "audience", "market", "competitors", "pricing", "monetization", "subscription", "support", "helpdesk", "faq", "security", "compliance", "privacy", "incident", "integrations", "partnerships", "apis", "webhooks"];
 export declare const MODULES: readonly ["f1", "f2", "f3", "f4", "f5", "f6", "shared", "none"];
 export declare const PRIORITIES: readonly ["high", "medium", "low"];
@@ -44,5 +45,8 @@ export interface PaginatedResponse<T> {
         nextCursor: string | null;
         count: number;
     };
+}
+export interface ContextDataWithTypes extends SaveContextBody {
+    content_types?: string[];
 }
 //# sourceMappingURL=index.d.ts.map
