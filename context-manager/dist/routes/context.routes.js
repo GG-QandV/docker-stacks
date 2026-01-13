@@ -37,9 +37,9 @@ exports.contextRoutes = contextRoutes;
 const contentDetector_service_1 = require("../services/contentDetector.service");
 const postgres_service_1 = require("../services/postgres.service");
 const qdrant_service_1 = require("../services/qdrant.service");
-const context_schema_1 = require("../schemas/context.schema"); // Убедитесь, что тут стоит };
+const timeParser_service_1 = require("../services/timeParser.service");
+const context_schema_1 = require("../schemas/context.schema");
 async function contextRoutes(fastify) {
-    // Save context
     fastify.post('/api/context/save', {
         schema: {
             body: context_schema_1.SaveContextBodySchema,
@@ -48,10 +48,8 @@ async function contextRoutes(fastify) {
         const body = request.body;
         const syncId = postgres_service_1.postgresService.generateSyncId();
         const detectedTypes = contentDetector_service_1.contentDetector.detectTypes(body.content || "");
-        // Save to PostgreSQL first
         const contextData = { ...body, content_types: detectedTypes };
         const { id } = await postgres_service_1.postgresService.createContext(contextData, syncId);
-        // ЗАМЕНА ТУТ (теперь синхронизируем с Qdrant):
         try {
             await qdrant_service_1.qdrantService.createContext(body, syncId);
             await postgres_service_1.postgresService.updateSyncStatus(syncId, 'synced');
@@ -67,7 +65,6 @@ async function contextRoutes(fastify) {
             id,
         };
     });
-    // Get session context
     fastify.get('/api/context/session/:sessionId', {
         schema: {
             params: context_schema_1.SessionIdParamSchema,
@@ -87,7 +84,6 @@ async function contextRoutes(fastify) {
             },
         };
     });
-    // Get by sync ID
     fastify.get('/api/context/sync/:syncId', {
         schema: {
             params: context_schema_1.SyncIdParamSchema,
@@ -107,7 +103,6 @@ async function contextRoutes(fastify) {
             result: record,
         };
     });
-    // Get today's contexts
     fastify.get('/api/context/today', {
         schema: {
             querystring: context_schema_1.PaginationQuerySchema,
@@ -126,7 +121,6 @@ async function contextRoutes(fastify) {
             },
         };
     });
-    // Get yesterday's contexts
     fastify.get('/api/context/yesterday', {
         schema: {
             querystring: context_schema_1.PaginationQuerySchema,
@@ -145,7 +139,6 @@ async function contextRoutes(fastify) {
             },
         };
     });
-    // Get by date offset
     fastify.get('/api/context/day/offset/:offset', {
         schema: {
             params: context_schema_1.OffsetParamSchema,
@@ -166,7 +159,6 @@ async function contextRoutes(fastify) {
             },
         };
     });
-    // Get by logical section
     fastify.get('/api/context/section/:logicalSection', {
         schema: {
             params: context_schema_1.LogicalSectionParamSchema,
@@ -186,7 +178,6 @@ async function contextRoutes(fastify) {
             },
         };
     });
-    // Get by module
     fastify.get('/api/context/module/:moduleId', {
         schema: {
             params: context_schema_1.ModuleParamSchema,
@@ -206,7 +197,6 @@ async function contextRoutes(fastify) {
             },
         };
     });
-    // Get by section and module
     fastify.get('/api/context/section/:logicalSection/module/:moduleId', {
         schema: {
             querystring: context_schema_1.PaginationQuerySchema,
@@ -225,7 +215,6 @@ async function contextRoutes(fastify) {
             },
         };
     });
-    // Get by priority
     fastify.get('/api/context/priority/:priority', {
         schema: {
             params: context_schema_1.PriorityParamSchema,
@@ -245,7 +234,6 @@ async function contextRoutes(fastify) {
             },
         };
     });
-    // Get by deployment stage
     fastify.get('/api/context/deployment/:stage', {
         schema: {
             params: context_schema_1.DeploymentStageParamSchema,
@@ -265,7 +253,6 @@ async function contextRoutes(fastify) {
             },
         };
     });
-    // Get by market phase
     fastify.get('/api/context/market/:phase', {
         schema: {
             params: context_schema_1.MarketPhaseParamSchema,
@@ -285,7 +272,6 @@ async function contextRoutes(fastify) {
             },
         };
     });
-    // Marketing summary
     fastify.get('/api/context/marketing/summary', async () => {
         const { sections, total } = await postgres_service_1.postgresService.getMarketingSummary();
         return {
@@ -297,7 +283,6 @@ async function contextRoutes(fastify) {
             },
         };
     });
-    // Product roadmap
     fastify.get('/api/context/product/roadmap', {
         schema: {
             querystring: context_schema_1.PaginationQuerySchema,
@@ -315,7 +300,6 @@ async function contextRoutes(fastify) {
             },
         };
     });
-    // Competitor analysis
     fastify.get('/api/context/market/competitors', {
         schema: {
             querystring: context_schema_1.PaginationQuerySchema,
@@ -333,9 +317,18 @@ async function contextRoutes(fastify) {
             },
         };
     });
-    // Query context by filters  
     fastify.post('/api/context/query', async (request, reply) => {
-        const { date_from, date_to, level, agent, session_id } = request.body;
+        let { date_from, date_to, level, agent, session_id, time_query } = request.body;
+        if (time_query) {
+            const parsed = timeParser_service_1.timeParserService.parse(time_query);
+            console.error('TIME_PARSER:', JSON.stringify({
+                query: time_query,
+                date_from: parsed.date_from?.toISOString(),
+                date_to: parsed.date_to?.toISOString()
+            }));
+            date_from = date_from || parsed.date_from?.toISOString();
+            date_to = date_to || parsed.date_to?.toISOString();
+        }
         let query = 'SELECT id, session_id, logical_section, content_brief, content_important, content_full, created_at FROM development_context WHERE 1=1';
         const params = [];
         let idx = 1;
@@ -360,6 +353,7 @@ async function contextRoutes(fastify) {
             params.push(session_id);
         }
         query += ' ORDER BY created_at DESC LIMIT 20';
+        console.error('SQL:', query, 'PARAMS:', JSON.stringify(params));
         const result = await postgres_service_1.postgresService.executeRawQuery(query, params);
         return { success: true, results: result.rows, count: result.rowCount };
     });

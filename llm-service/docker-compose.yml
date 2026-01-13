@@ -1,27 +1,20 @@
-version: '3.8'
 services:
-  llm-standalone:
-    image: ghcr.io/ggerganov/llama.cpp:server
+  llm-service:
+    image: ghcr.io/ggml-org/llama.cpp:server
+    container_name: llm-service
     ports:
       - "8085:8080"
     volumes:
-      - ~/orchestrator/models/universal:/models:ro
-    environment:
-      - HOST=0.0.0.0
-      - PORT=8080
-      - LLAMA_ARG_NO_MMAP=True  # Исправление exit 139
+      - /home/gg/orchestrator/models/universal/Qwen:/models:ro
     command: >
-      -m /models/DeepSeek/DeepSeek-R1-Distill-Llama-8B-Q4_K_M.gguf
+      -m /models/Qwen2.5-7B-Instruct-Q4_K_M.gguf
       --host 0.0.0.0
       --port 8080
-      -c 2048
-      -t 4
-      --no-mmap
-    deploy:
-      resources:
-        limits:
-          memory: 2500M
-        reservations:
-          memory: 2000M
+      -c 1024
+      -t 3
+      -ub 128
     restart: unless-stopped
-
+networks:
+  orchestrator-network:
+    name: orchestrator-network
+    external: true
