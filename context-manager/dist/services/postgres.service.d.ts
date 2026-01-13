@@ -8,7 +8,9 @@ export declare class PostgresService {
     close(): Promise<void>;
     withTransaction<T>(callback: (client: PoolClient) => Promise<T>): Promise<T>;
     generateSyncId(): string;
-    createContext(data: SaveContextBody, syncId: string): Promise<{
+    createContext(data: SaveContextBody & {
+        content_types?: string[];
+    }, syncId: string): Promise<{
         id: number;
         syncId: string;
     }>;

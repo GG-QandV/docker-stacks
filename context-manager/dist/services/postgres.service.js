@@ -50,20 +50,21 @@ class PostgresService {
         const summary = data.summary ||
             data.content.substring(0, 200) + (data.content.length > 200 ? '...' : '');
         const result = await this.pool.query(`INSERT INTO development_context 
-       (sync_id, session_id, context_type, content, summary, tags, metadata, 
-        project_id, logical_section, module, tech_tags, phase, priority, 
-        deployment_stage, market_phase, sync_status)
-       VALUES ($1::text, $2::text, $3::text, $4::text, $5::text, $6::text[], $7::jsonb, 
-               $8::text, $9::text, $10::text, $11::text[], $12::text, $13::text, 
-               $14::text, $15::text, 'pending'::text)
+       (sync_id, session_id, context_type, content, content_brief, content_important, content_full,
+        summary, tags, metadata, project_id, logical_section, module, tech_tags, phase, priority, 
+        deployment_stage, market_phase, content_types, sync_status)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, 'pending')
        RETURNING id`, [
             syncId,
             data.sessionId,
             data.contextType,
             data.content,
+            data.content.substring(0, 200),
+            data.content.substring(0, 2000),
+            data.content,
             summary,
             data.tags || [],
-            JSON.stringify(data.metadata || {}),
+            data.metadata || {},
             data.projectId || 'default',
             data.logicalSection || null,
             data.module || null,
@@ -72,6 +73,7 @@ class PostgresService {
             data.priority || null,
             data.deploymentStage || null,
             data.marketPhase || null,
+            data.content_types || [],
         ]);
         return { id: result.rows[0].id, syncId };
     }
