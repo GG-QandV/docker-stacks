@@ -12,8 +12,6 @@ services:
       - TEI_HOST=http://tei-embeddings:80
       - EMBEDDING_PROVIDER=huggingface-tei
       - EMBEDDING_DIMENSIONS=384
-      - HOST=0.0.0.0
-      - PORT=3847
     networks:
       - orchestrator-network
     extra_hosts:
