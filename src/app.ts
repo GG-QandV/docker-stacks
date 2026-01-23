@@ -39,6 +39,50 @@ app.register(contextRoutes);
 app.register(searchRoutes);
 app.register(syncRoutes);
 
+// SSE endpoint для MCP
+app.get("/", async (req, reply) => {
+  reply.header("Content-Type", "text/event-stream");
+  reply.header("Cache-Control", "no-cache");
+  reply.header("Connection", "keep-alive");
+  reply.header("Access-Control-Allow-Origin", "*");
+  
+  reply.raw.write("data: {\"type\":\"connected\",\"message\":\"MCP SSE ready\"}\n\n");
+  
+  req.raw.socket.setTimeout(Number.MAX_SAFE_INTEGER);
+  
+  const interval = setInterval(() => {
+    reply.raw.write("data: {\"type\":\"ping\",\"timestamp\":" + Date.now() + "}\n\n");
+  }, 30000);
+  
+  req.raw.on("close", () => {
+    clearInterval(interval);
+    req.raw.destroy();
+  });
+});
+
+// MCP initialize endpoint (POST /mcp)
+app.post("/mcp", async (req, reply) => {
+  const body = req.body as any;
+  if (body.method === "initialize") {
+    return reply.send({
+      jsonrpc: "2.0",
+      id: body.id,
+      result: {
+        protocolVersion: "2024-11-05",
+        capabilities: {
+          tools: {},
+          resources: ["filesystem", "diagnostics"]
+        },
+        serverInfo: {
+          name: "context-manager",
+          version: "2.0.0"
+        }
+      }
+    });
+  }
+  return reply.status(404).send({ error: "Method not found" });
+});
+
 // Ready hook
 app.addHook('onReady', async () => {
   app.log.info('All plugins loaded, server ready');
