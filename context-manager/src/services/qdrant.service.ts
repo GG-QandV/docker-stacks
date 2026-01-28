@@ -60,6 +60,7 @@ class QdrantService {
       id: crypto.randomUUID(),
       vector: chunk.vector,
       payload: {
+        agent: data.agent || (data.metadata as any)?.agent || null,
         sessionId: data.sessionId,
         contextType: data.contextType,
         content: chunk.text, // Теперь тут кусок текста
@@ -99,6 +100,8 @@ class QdrantService {
           content: record.content,
           summary: record.summary,
           tags: record.tags,
+          metadata: record.metadata,
+          agent: (record.metadata as any)?.agent,
           projectId: record.project_id,
           logicalSection: record.logical_section ?? undefined,
           module: record.module ?? undefined,
@@ -108,6 +111,7 @@ class QdrantService {
           deploymentStage: record.deployment_stage ?? undefined,
           marketPhase: record.market_phase ?? undefined,
         };
+
 
         await this.createContext(body, record.sync_id);
         successful.push(record.sync_id);
@@ -130,6 +134,10 @@ class QdrantService {
     if (filters?.logicalSection) mustFilters.push({ key: 'logicalSection', match: { value: filters.logicalSection } });
     if (filters?.module) mustFilters.push({ key: 'module', match: { value: filters.module } });
     if (filters?.projectId) mustFilters.push({ key: 'projectId', match: { value: filters.projectId } });
+    if (filters?.agent) {
+      mustFilters.push({ key: 'agent', match: { value: filters.agent } });
+    }
+
 
     const results = await this.client.search(this.collectionName, {
       vector: queryVector,
