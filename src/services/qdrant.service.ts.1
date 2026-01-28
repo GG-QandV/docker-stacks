@@ -80,14 +80,6 @@ class QdrantService {
         chunkIndex: index
       }
     }));
-    // DEBUG: Check payload before upsert
-    console.log('[QDRANT DEBUG] Agent in payload:', {
-      rawAgent: data.agent,
-      metadataAgent: (data.metadata as any)?.agent,
-      firstPointPayload: points[0]?.payload,
-      pointsCount: points.length
-    });
-
 
     await this.client.upsert(this.collectionName, {
       wait: true,
@@ -173,7 +165,6 @@ class QdrantService {
         deploymentStage: p?.deploymentStage ?? undefined,
         marketPhase: p?.marketPhase ?? undefined,
         certainty: (hit.score + 1) / 2,
-        agent: p?.agent ?? undefined,
         score: hit.score
       };
     });
