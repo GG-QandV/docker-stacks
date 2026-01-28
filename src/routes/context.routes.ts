@@ -42,7 +42,8 @@ export async function contextRoutes(fastify: FastifyInstance) {
       const { id } = await postgresService.createContext(contextData, syncId);
 
       try {
-        await qdrantService.createContext(body, syncId);
+        await qdrantService.createContext(contextData, syncId);
+
         await postgresService.updateSyncStatus(syncId, 'synced');
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : String(err);

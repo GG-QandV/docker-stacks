@@ -60,31 +60,47 @@ export class PostgresService {
     return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   }
 
-  async createContext(
-    data: SaveContextBody & { content_types?: string[] },
-    syncId: string
-  ): Promise<{ id: number; syncId: string }> {
-    const summary = data.summary || 
-      data.content.substring(0, 200) + (data.content.length > 200 ? '...' : '');
+    async createContext(
+     data: SaveContextBody & { content_types?: string[]; agent?: string },
+     syncId: string
+    ): Promise<{ id: number; syncId: string }> {
+      const summary = data.summary || 
+        data.content.substring(0, 200) + (data.content.length > 200 ? '...' : '');
 
-    const result = await this.pool.query<{ id: number }>(
-      `INSERT INTO development_context 
-       (sync_id, session_id, context_type, content, content_brief, content_important, content_full,
-        summary, tags, metadata, project_id, logical_section, module, tech_tags, phase, priority, 
-        deployment_stage, market_phase, content_types, sync_status)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, 'pending')
+      // Генерация brief (200-300 символов)
+      const contentBrief = this.generateBrief(data.content);
+
+      // Генерация important (до 3K символов, если mode === 'important')
+      const contentImportant = (data.metadata as any)?.mode === 'important'
+        ? this.generateImportant(data.content, (data.metadata as any)?.topics)
+        : data.content.substring(0, 2000);
+
+      // Обогащение metadata полем agent
+      const enrichedMetadata = {
+        ...(data.metadata || {}),
+        agent: data.agent || (data.metadata as any)?.agent || 'unknown',
+        mode: (data.metadata as any)?.mode || 'full',
+      };
+
+      const result = await this.pool.query<{ id: number }>(
+        `INSERT INTO development_context 
+        (sync_id, session_id, context_type, content, content_brief, content_important, content_full,
+         summary, tags, metadata, project_id, logical_section, module, tech_tags, phase, priority, 
+         deployment_stage, market_phase, content_types, sync_status)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, 'pending')
+
        RETURNING id`,
       [
         syncId,
         data.sessionId,
         data.contextType,
         data.content,
-        data.content.substring(0, 200),
-        data.content.substring(0, 2000),
-        data.content,
+        contentBrief,              // 5-й параметр
+        contentImportant,          // 6-й параметр
+        data.content,              // 7-й параметр
         summary,
         data.tags || [],
-        data.metadata || {},
+        enrichedMetadata,          // 10-й параметр
         data.projectId || 'default',
         data.logicalSection || null,
         data.module || null,
@@ -145,6 +161,10 @@ export class PostgresService {
       if (filters.sessionId) {
         sql += ` AND session_id = $${paramIndex++}::text`;
         queryParams.push(filters.sessionId);
+      }
+      if (filters.agent) {
+        sql += ` AND metadata->>'agent' = $${paramIndex++}::text`;
+        queryParams.push(filters.agent);
       }
       if (filters.contextType) {
         sql += ` AND context_type = $${paramIndex++}::text`;
@@ -480,6 +500,43 @@ export class PostgresService {
     );
     return result.rows;
   }
+
+  private generateBrief(content: string): string {
+    const maxLen = 250;
+    if (content.length <= maxLen) return content;
+    
+    const truncated = content.substring(0, maxLen);
+    const lastSpace = truncated.lastIndexOf(' ');
+    
+    return lastSpace > 0 
+      ? truncated.substring(0, lastSpace) + '...' 
+      : truncated + '...';
+  }
+
+  private generateImportant(content: string, topics?: string): string {
+    if (!topics) {
+      return content.substring(0, 3000);
+    }
+
+    const topicKeywords = topics.split(/[,;\s]+/).filter(t => t.length > 2);
+    const paragraphs = content.split(/\n\n+/);
+    
+    let extracted = '';
+    for (const para of paragraphs) {
+      const hasKeyword = topicKeywords.some(kw => 
+        para.toLowerCase().includes(kw.toLowerCase())
+      );
+      if (hasKeyword) {
+        extracted += para + '\n\n';
+        if (extracted.length >= 3000) break;
+      }
+    }
+
+    return extracted.length > 0 
+      ? extracted.substring(0, 3000) 
+      : content.substring(0, 3000);
+  }
+
 
   async getMarketingSummary(): Promise<{
     sections: Array<{

@@ -36,6 +36,7 @@ export const SaveContextBodySchema = Type.Object({
   summary: Type.Optional(Type.String()),
   tags: Type.Optional(Type.Array(Type.String())),
   metadata: Type.Optional(Type.Record(Type.String(), Type.Unknown())),
+  agent: Type.Optional(Type.String({ minLength: 1 })),
   projectId: Type.Optional(Type.String()),
   logicalSection: Type.Optional(LogicalSectionSchema),
   module: Type.Optional(ModuleSchema),
@@ -49,6 +50,7 @@ export const SaveContextBodySchema = Type.Object({
 export const SearchContextBodySchema = Type.Object({
   query: Type.String({ minLength: 1 }),
   filters: Type.Optional(Type.Object({
+    agent: Type.Optional(Type.String()),
     sessionId: Type.Optional(Type.String()),
     contextType: Type.Optional(Type.String()),
     logicalSection: Type.Optional(LogicalSectionSchema),
@@ -67,6 +69,7 @@ export const SearchContextBodySchema = Type.Object({
 export const SemanticSearchBodySchema = Type.Object({
   query: Type.String({ minLength: 1 }),
   filters: Type.Optional(Type.Object({
+    agent: Type.Optional(Type.String()),
     logicalSection: Type.Optional(LogicalSectionSchema),
     module: Type.Optional(ModuleSchema),
     projectId: Type.Optional(Type.String()),
