@@ -1,0 +1,206 @@
+[1mdiff --git a/context-manager/src/routes/context.routes.ts b/context-manager/src/routes/context.routes.ts[m
+[1mindex 25736ac..ef32622 100644[m
+[1m--- a/context-manager/src/routes/context.routes.ts[m
+[1m+++ b/context-manager/src/routes/context.routes.ts[m
+[36m@@ -42,7 +42,8 @@[m [mexport async function contextRoutes(fastify: FastifyInstance) {[m
+       const { id } = await postgresService.createContext(contextData, syncId);[m
+ [m
+       try {[m
+[31m-        await qdrantService.createContext(body, syncId);[m
+[32m+[m[32m        await qdrantService.createContext(contextData, syncId);[m
+[32m+[m
+         await postgresService.updateSyncStatus(syncId, 'synced');[m
+       } catch (err) {[m
+         const errorMessage = err instanceof Error ? err.message : String(err);[m
+[1mdiff --git a/context-manager/src/schemas/context.schema.ts b/context-manager/src/schemas/context.schema.ts[m
+[1mindex 6c6da6d..2da30a7 100644[m
+[1m--- a/context-manager/src/schemas/context.schema.ts[m
+[1m+++ b/context-manager/src/schemas/context.schema.ts[m
+[36m@@ -36,6 +36,7 @@[m [mexport const SaveContextBodySchema = Type.Object({[m
+   summary: Type.Optional(Type.String()),[m
+   tags: Type.Optional(Type.Array(Type.String())),[m
+   metadata: Type.Optional(Type.Record(Type.String(), Type.Unknown())),[m
+[32m+[m[32m  agent: Type.Optional(Type.String({ minLength: 1 })),[m
+   projectId: Type.Optional(Type.String()),[m
+   logicalSection: Type.Optional(LogicalSectionSchema),[m
+   module: Type.Optional(ModuleSchema),[m
+[36m@@ -49,6 +50,7 @@[m [mexport const SaveContextBodySchema = Type.Object({[m
+ export const SearchContextBodySchema = Type.Object({[m
+   query: Type.String({ minLength: 1 }),[m
+   filters: Type.Optional(Type.Object({[m
+[32m+[m[32m    agent: Type.Optional(Type.String()),[m
+     sessionId: Type.Optional(Type.String()),[m
+     contextType: Type.Optional(Type.String()),[m
+     logicalSection: Type.Optional(LogicalSectionSchema),[m
+[36m@@ -67,6 +69,7 @@[m [mexport const SearchContextBodySchema = Type.Object({[m
+ export const SemanticSearchBodySchema = Type.Object({[m
+   query: Type.String({ minLength: 1 }),[m
+   filters: Type.Optional(Type.Object({[m
+[32m+[m[32m    agent: Type.Optional(Type.String()),[m
+     logicalSection: Type.Optional(LogicalSectionSchema),[m
+     module: Type.Optional(ModuleSchema),[m
+     projectId: Type.Optional(Type.String()),[m
+[1mdiff --git a/context-manager/src/services/postgres.service.ts b/context-manager/src/services/postgres.service.ts[m
+[1mindex ab1a4e4..a743c9d 100644[m
+[1m--- a/context-manager/src/services/postgres.service.ts[m
+[1m+++ b/context-manager/src/services/postgres.service.ts[m
+[36m@@ -60,31 +60,47 @@[m [mexport class PostgresService {[m
+     return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;[m
+   }[m
+ [m
+[31m-  async createContext([m
+[31m-    data: SaveContextBody & { content_types?: string[] },[m
+[31m-    syncId: string[m
+[31m-  ): Promise<{ id: number; syncId: string }> {[m
+[31m-    const summary = data.summary || [m
+[31m-      data.content.substring(0, 200) + (data.content.length > 200 ? '...' : '');[m
+[31m-[m
+[31m-    const result = await this.pool.query<{ id: number }>([m
+[31m-      `INSERT INTO development_context [m
+[31m-       (sync_id, session_id, context_type, content, content_brief, content_important, content_full,[m
+[31m-        summary, tags, metadata, project_id, logical_section, module, tech_tags, phase, priority, [m
+[31m-        deployment_stage, market_phase, content_types, sync_status)[m
+[31m-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, 'pending')[m
+[32m+[m[32m    async createContext([m
+[32m+[m[32m     data: SaveContextBody & { content_types?: string[]; agent?: string },[m
+[32m+[m[32m     syncId: string[m
+[32m+[m[32m    ): Promise<{ id: number; syncId: string }> {[m
+[32m+[m[32m      const summary = data.summary ||[m[41m [m
+[32m+[m[32m        data.content.substring(0, 200) + (data.content.length > 200 ? '...' : '');[m
+[32m+[m
+[32m+[m[32m      // Генерация brief (200-300 символов)[m
+[32m+[m[32m      const contentBrief = this.generateBrief(data.content);[m
+[32m+[m
+[32m+[m[32m      // Генерация important (до 3K символов, если mode === 'important')[m
+[32m+[m[32m      const contentImportant = (data.metadata as any)?.mode === 'important'[m
+[32m+[m[32m        ? this.generateImportant(data.content, (data.metadata as any)?.topics)[m
+[32m+[m[32m        : data.content.substring(0, 2000);[m
+[32m+[m
+[32m+[m[32m      // Обогащение metadata полем agent[m
+[32m+[m[32m      const enrichedMetadata = {[m
+[32m+[m[32m        ...(data.metadata || {}),[m
+[32m+[m[32m        agent: data.agent || (data.metadata as any)?.agent || 'unknown',[m
+[32m+[m[32m        mode: (data.metadata as any)?.mode || 'full',[m
+[32m+[m[32m      };[m
+[32m+[m
+[32m+[m[32m      const result = await this.pool.query<{ id: number }>([m
+[32m+[m[32m        `INSERT INTO development_context[m[41m [m
+[32m+[m[32m        (sync_id, session_id, context_type, content, content_brief, content_important, content_full,[m
+[32m+[m[32m         summary, tags, metadata, project_id, logical_section, module, tech_tags, phase, priority,[m[41m [m
+[32m+[m[32m         deployment_stage, market_phase, content_types, sync_status)[m
+[32m+[m[32m         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, 'pending')[m
+[32m+[m
+        RETURNING id`,[m
+       [[m
+         syncId,[m
+         data.sessionId,[m
+         data.contextType,[m
+         data.content,[m
+[31m-        data.content.substring(0, 200),[m
+[31m-        data.content.substring(0, 2000),[m
+[31m-        data.content,[m
+[32m+[m[32m        contentBrief,              // 5-й параметр[m
+[32m+[m[32m        contentImportant,          // 6-й параметр[m
+[32m+[m[32m        data.content,              // 7-й параметр[m
+         summary,[m
+         data.tags || [],[m
+[31m-        data.metadata || {},[m
+[32m+[m[32m        enrichedMetadata,          // 10-й параметр[m
+         data.projectId || 'default',[m
+         data.logicalSection || null,[m
+         data.module || null,[m
+[36m@@ -146,6 +162,10 @@[m [mexport class PostgresService {[m
+         sql += ` AND session_id = $${paramIndex++}::text`;[m
+         queryParams.push(filters.sessionId);[m
+       }[m
+[32m+[m[32m      if (filters.agent) {[m
+[32m+[m[32m        sql += ` AND metadata->>'agent' = $${paramIndex++}::text`;[m
+[32m+[m[32m        queryParams.push(filters.agent);[m
+[32m+[m[32m      }[m
+       if (filters.contextType) {[m
+         sql += ` AND context_type = $${paramIndex++}::text`;[m
+         queryParams.push(filters.contextType);[m
+[36m@@ -481,6 +501,43 @@[m [mexport class PostgresService {[m
+     return result.rows;[m
+   }[m
+ [m
+[32m+[m[32m  private generateBrief(content: string): string {[m
+[32m+[m[32m    const maxLen = 250;[m
+[32m+[m[32m    if (content.length <= maxLen) return content;[m
+[32m+[m[41m    [m
+[32m+[m[32m    const truncated = content.substring(0, maxLen);[m
+[32m+[m[32m    const lastSpace = truncated.lastIndexOf(' ');[m
+[32m+[m[41m    [m
+[32m+[m[32m    return lastSpace > 0[m[41m [m
+[32m+[m[32m      ? truncated.substring(0, lastSpace) + '...'[m[41m [m
+[32m+[m[32m      : truncated + '...';[m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m[32m  private generateImportant(content: string, topics?: string): string {[m
+[32m+[m[32m    if (!topics) {[m
+[32m+[m[32m      return content.substring(0, 3000);[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    const topicKeywords = topics.split(/[,;\s]+/).filter(t => t.length > 2);[m
+[32m+[m[32m    const paragraphs = content.split(/\n\n+/);[m
+[32m+[m[41m    [m
+[32m+[m[32m    let extracted = '';[m
+[32m+[m[32m    for (const para of paragraphs) {[m
+[32m+[m[32m      const hasKeyword = topicKeywords.some(kw =>[m[41m [m
+[32m+[m[32m        para.toLowerCase().includes(kw.toLowerCase())[m
+[32m+[m[32m      );[m
+[32m+[m[32m      if (hasKeyword) {[m
+[32m+[m[32m        extracted += para + '\n\n';[m
+[32m+[m[32m        if (extracted.length >= 3000) break;[m
+[32m+[m[32m      }[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    return extracted.length > 0[m[41m [m
+[32m+[m[32m      ? extracted.substring(0, 3000)[m[41m [m
+[32m+[m[32m      : content.substring(0, 3000);[m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m
+   async getMarketingSummary(): Promise<{[m
+     sections: Array<{[m
+       logical_section: string;[m
+[1mdiff --git a/context-manager/src/services/qdrant.service.ts b/context-manager/src/services/qdrant.service.ts[m
+[1mindex 4e680cb..1a58121 100644[m
+[1m--- a/context-manager/src/services/qdrant.service.ts[m
+[1m+++ b/context-manager/src/services/qdrant.service.ts[m
+[36m@@ -60,6 +60,7 @@[m [mclass QdrantService {[m
+       id: crypto.randomUUID(),[m
+       vector: chunk.vector,[m
+       payload: {[m
+[32m+[m[32m        agent: data.agent || (data.metadata as any)?.agent || null,[m
+         sessionId: data.sessionId,[m
+         contextType: data.contextType,[m
+         content: chunk.text, // Теперь тут кусок текста[m
+[36m@@ -99,6 +100,8 @@[m [mclass QdrantService {[m
+           content: record.content,[m
+           summary: record.summary,[m
+           tags: record.tags,[m
+[32m+[m[32m          metadata: record.metadata,[m
+[32m+[m[32m          agent: (record.metadata as any)?.agent,[m
+           projectId: record.project_id,[m
+           logicalSection: record.logical_section ?? undefined,[m
+           module: record.module ?? undefined,[m
+[36m@@ -109,6 +112,7 @@[m [mclass QdrantService {[m
+           marketPhase: record.market_phase ?? undefined,[m
+         };[m
+ [m
+[32m+[m
+         await this.createContext(body, record.sync_id);[m
+         successful.push(record.sync_id);[m
+       } catch (error) {[m
+[36m@@ -130,6 +134,10 @@[m [mclass QdrantService {[m
+     if (filters?.logicalSection) mustFilters.push({ key: 'logicalSection', match: { value: filters.logicalSection } });[m
+     if (filters?.module) mustFilters.push({ key: 'module', match: { value: filters.module } });[m
+     if (filters?.projectId) mustFilters.push({ key: 'projectId', match: { value: filters.projectId } });[m
+[32m+[m[32m    if (filters?.agent) {[m
+[32m+[m[32m      mustFilters.push({ key: 'agent', match: { value: filters.agent } });[m
+[32m+[m[32m    }[m
+[32m+[m
+ [m
+     const results = await this.client.search(this.collectionName, {[m
+       vector: queryVector,[m

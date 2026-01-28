@@ -1,9 +1,9 @@
 {
   "servers": {
     "context-manager": {
-      "type": "http",
-      "url": "http://localhost:3847"
+      "type": "stdio",
+      "command": "/usr/bin/node",
+      "args": ["/home/gg/.iflow/mcp-servers/context-manager/server.js"]
     }
   }
 }
-

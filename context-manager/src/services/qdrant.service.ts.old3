@@ -60,7 +60,11 @@ class QdrantService {
       id: crypto.randomUUID(),
       vector: chunk.vector,
       payload: {
-        agent: data.agent || (data.metadata as any)?.agent || null,
+        agent: (() => {
+          const agent = data.agent || (data.metadata as any)?.agent || null;
+          console.log('[QDRANT] agent value:', agent, 'from data.agent:', data.agent, 'from metadata:', (data.metadata as any)?.agent);
+          return agent;
+        })(),
         sessionId: data.sessionId,
         contextType: data.contextType,
         content: chunk.text, // Теперь тут кусок текста
@@ -80,14 +84,6 @@ class QdrantService {
         chunkIndex: index
       }
     }));
-    // DEBUG: Check payload before upsert
-    console.log('[QDRANT DEBUG] Agent in payload:', {
-      rawAgent: data.agent,
-      metadataAgent: (data.metadata as any)?.agent,
-      firstPointPayload: points[0]?.payload,
-      pointsCount: points.length
-    });
-
 
     await this.client.upsert(this.collectionName, {
       wait: true,
@@ -173,7 +169,6 @@ class QdrantService {
         deploymentStage: p?.deploymentStage ?? undefined,
         marketPhase: p?.marketPhase ?? undefined,
         certainty: (hit.score + 1) / 2,
-        agent: p?.agent ?? undefined,
         score: hit.score
       };
     });
