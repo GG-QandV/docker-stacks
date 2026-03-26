@@ -26,7 +26,7 @@ services:
   tei-embeddings:
     image: ghcr.io/huggingface/text-embeddings-inference:cpu-1.8.3
     pull_policy: if_not_present
-    container_name: tei-service
+    container_name: tei-embeddings
     shm_size: 1024m
     mem_limit: 1536m
     mem_reservation: 768m
