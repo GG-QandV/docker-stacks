@@ -7,7 +7,7 @@ services:
       - "6334:6333"  # HTTP API
       - "6335:6334"  # gRPC
     volumes:
-      - ~/orchestrator/qdrant-new-data:/qdrant/storage
+      - /home/gg/orchestrator/qdrant-new-data:/qdrant/storage
     networks:
       - orchestrator-network
     deploy:
