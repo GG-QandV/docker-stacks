@@ -43,6 +43,23 @@ Detailed endpoint documentation can be found in `docs/` or inferred from the sch
 - `POST /v1/context`: Save new context entry.
 - `GET /v1/context/search`: Semantic search over stored context.
 - `GET /health`: System health status.
+- `POST /api/context/query`: Low-level SQL-based query interface.
+
+## 🛠 Model Context Protocol (MCP) Tools
+
+The service provides a comprehensive suite of tools for AI Agent integration:
+
+| Tool | Description | Parameters |
+|------|-------------|------------|
+| `cm_save_br` | Save context (Brief) | `content` (auto-summary 200-300 chars) |
+| `cm_save_im` | Save context (Important) | `content`, `topics` (topics-based summary) |
+| `cm_save_fl` | Save context (Full) | `content` (complete session log) |
+| `cm_search` | Semantic Search | `q` (query), `agent`, `n` (results count) |
+| `cm_query` | SQL-based Search | `date`, `agent`, `session_id`, `mode` |
+| `cm_cross` | Cross-Agent Search | `q` (query), `from` (source agent) |
+| `cm_agents` | List Agents | List all active agents with record counts |
+| `cm_stats` | Statistics | Context stats for specific agent or session |
+| `cm_export` | Export Session | Export session data to JSON format |
 
 ## 🏗 Architecture
 
