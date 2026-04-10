@@ -6,7 +6,7 @@ services:
     ports:
       - "3847:3847"
     environment:
-      - DATABASE_URL=postgresql://postgres:Mart436780@postgresql-postgres-main-1:5432/context_db
+      - DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@localhost:5432/context_db}
       - QDRANT_HOST=qdrant-new
       - QDRANT_PORT=6333
       - TEI_HOST=http://tei-embeddings:80
@@ -35,20 +35,20 @@ services:
     networks:
       - orchestrator-network
     volumes:
-      - /home/gg/.iflow:/root/.iflow:ro
       - /home/gg/orchestrator/models/embedding/multilingual-e5-small_Q8/onnx:/data:ro
     environment:
-      - RAYON_NUM_THREADS=2
-      - OMP_NUM_THREADS=2
+      - RAYON_NUM_THREADS=4
+      - OMP_NUM_THREADS=4
       - MALLOC_ARENA_MAX=2
       - HF_HUB_OFFLINE=1
       - OMP_WAIT_POLICY=PASSIVE
     command: >
       --model-id /data
       --pooling mean
-      --tokenization-workers 2
-      --max-batch-tokens 512
-      --max-concurrent-requests 2
+      --tokenization-workers 3
+      --max-batch-tokens 1024
+      --max-concurrent-requests 16
+      --max-batch-requests 8
       --auto-truncate
     restart: unless-stopped
 
