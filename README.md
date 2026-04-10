@@ -2,14 +2,14 @@
 
 The core orchestration service for managing AI Agent context, providing a bridge between structured PostgreSQL data and high-performance vector search.
 
-## ✨ Features
+## Features
 
 - **Dual-Database Sync**: Automatic real-time synchronization between PostgreSQL and Qdrant.
 - **Local Embeddings**: High-performance semantic processing using **multilingual-e5-small_Q8** via local TEI.
 - **MCP Native**: Full support for Model Context Protocol to bridge agent memories.
 - **RESTful API**: Secure endpoints built with Fastify for rapid context retrieval.
 
-## 🛠 Setup & Installation
+## Setup & Installation
 
 ### Environment Variables
 Create a `.env` file in this directory (refer to `.env.example` if available or the internal list):
@@ -35,9 +35,9 @@ docker build -t context-manager .
 docker run -p 3847:3847 --env-file .env context-manager
 ```
 
-## 🔌 API Documentation
+## API Documentation
 
-Detailed endpoint documentation can be found in `docs/` or inferred from the schemas in `src/schemas/`.
+Detailed endpoint documentation can be found in `src/schemas/`.
 
 ### Core Endpoints:
 - `POST /v1/context`: Save new context entry.
@@ -45,7 +45,7 @@ Detailed endpoint documentation can be found in `docs/` or inferred from the sch
 - `GET /health`: System health status.
 - `POST /api/context/query`: Low-level SQL-based query interface.
 
-## 🛠 Model Context Protocol (MCP) Tools
+## Model Context Protocol (MCP) Tools
 
 The service provides a comprehensive suite of tools for AI Agent integration:
 
@@ -61,7 +61,7 @@ The service provides a comprehensive suite of tools for AI Agent integration:
 | `cm_stats` | Statistics | Context stats for specific agent or session |
 | `cm_export` | Export Session | Export session data to JSON format |
 
-## 🏗 Architecture
+## Architecture
 
 The service is structured following modular patterns:
 - `src/services`: Core logic (Sync, Qdrant/Postgres integration, local Embeddings).
@@ -71,4 +71,4 @@ The service is structured following modular patterns:
 
 ---
 **Maintained by:** GG-QandV  
-**Part of:** [Context-MCP Infrastructure](../README.md)
+**Part of:** [Context-Manager Infrastructure](../README.md)
