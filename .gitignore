@@ -3,3 +3,12 @@
 dist/
 *.js.map
 *.d.ts.map
+node_modules/
+backup/
+client/
+infra/
+models/
+resync_qdrant.py
+migrate_structure.py
+mcp/
+tests/
