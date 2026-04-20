@@ -12,6 +12,7 @@ The core orchestration service for managing AI Agent context, providing a bridge
 ## Setup & Installation
 
 ### Environment Variables
+
 Create a `.env` file in this directory (refer to `.env.example` if available or the internal list):
 
 ```ini
@@ -24,12 +25,14 @@ TEI_HOST=http://localhost:8080
 ```
 
 ### Running Locally
+
 ```bash
 npm install
 npm run dev
 ```
 
 ### Running via Docker
+
 ```bash
 docker build -t context-manager .
 docker run -p 3847:3847 --env-file .env context-manager
@@ -40,6 +43,7 @@ docker run -p 3847:3847 --env-file .env context-manager
 Detailed endpoint documentation can be found in `src/schemas/`.
 
 ### Core Endpoints:
+
 - `POST /v1/context`: Save new context entry.
 - `GET /v1/context/search`: Semantic search over stored context.
 - `GET /health`: System health status.
@@ -49,26 +53,35 @@ Detailed endpoint documentation can be found in `src/schemas/`.
 
 The service provides a comprehensive suite of tools for AI Agent integration:
 
-| Tool | Description | Parameters |
-|------|-------------|------------|
-| `cm_save_br` | Save context (Brief) | `content` (auto-summary 200-300 chars) |
-| `cm_save_im` | Save context (Important) | `content`, `topics` (topics-based summary) |
-| `cm_save_fl` | Save context (Full) | `content` (complete session log) |
-| `cm_search` | Semantic Search | `q` (query), `agent`, `n` (results count) |
-| `cm_query` | SQL-based Search | `date`, `agent`, `session_id`, `mode` |
-| `cm_cross` | Cross-Agent Search | `q` (query), `from` (source agent) |
-| `cm_agents` | List Agents | List all active agents with record counts |
-| `cm_stats` | Statistics | Context stats for specific agent or session |
-| `cm_export` | Export Session | Export session data to JSON format |
+| Tool         | Description              | Parameters                                  |
+| ------------ | ------------------------ | ------------------------------------------- |
+| `cm_save_br` | Save context (Brief)     | `content` (auto-summary 200-300 chars)      |
+| `cm_save_im` | Save context (Important) | `content`, `topics` (topics-based summary)  |
+| `cm_save_fl` | Save context (Full)      | `content` (complete session log)            |
+| `cm_search`  | Semantic Search          | `q` (query), `agent`, `n` (results count)   |
+| `cm_query`   | SQL-based Search         | `date`, `agent`, `session_id`, `mode`       |
+| `cm_cross`   | Cross-Agent Search       | `q` (query), `from` (source agent)          |
+| `cm_agents`  | List Agents              | List all active agents with record counts   |
+| `cm_stats`   | Statistics               | Context stats for specific agent or session |
+| `cm_export`  | Export Session           | Export session data to JSON format          |
 
 ## Architecture
 
 The service is structured following modular patterns:
+
 - `src/services`: Core logic (Sync, Qdrant/Postgres integration, local Embeddings).
 - `src/routes`: API route definitions.
 - `src/schemas`: Validation schemas (TypeBox).
 - `resync_qdrant.py`: High-speed utility for re-embedding and forced vector sync.
 
+## License
+
+This project is licensed under the **MIT License**. It is **100% free and open-source**.
+
+> [!WARNING]
+> **Disclaimer**: This software is provided "as is", without warranty of any kind. Users use this software at their own risk.
+
 ---
+
 **Maintained by:** GG-QandV  
 **Part of:** [Context-Manager Infrastructure](../README.md)
