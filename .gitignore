@@ -32,3 +32,6 @@ __pycache__/
 
 # Audit workflow
 docs/GAPS_AUDIT_WORKFLOW.md
+
+# Auto-generated tree
+TREE_C-M.txt
