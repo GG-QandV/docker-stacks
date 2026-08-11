@@ -22,22 +22,22 @@ if [ "$NODE_VER" -lt 18 ]; then
 fi
 echo "  node $(node -v) ✓"
 
-command -v npm >/dev/null 2>&1 || {
-  echo "ERROR: npm not found."
+command -v pnpm >/dev/null 2>&1 || {
+  echo "ERROR: pnpm not found. Install: npm i -g pnpm"
   exit 1
 }
-echo "  npm $(npm -v) ✓"
+echo "  pnpm $(pnpm -v) ✓"
 
-# --- npm install ---
+# --- pnpm install ---
 echo ""
 echo "Installing dependencies..."
 cd "$PROJECT_DIR"
-npm install
+pnpm install
 
 # --- Build ---
 echo ""
 echo "Building TypeScript..."
-npm run build
+pnpm run build
 
 # --- Create config dir ---
 echo ""
@@ -61,7 +61,7 @@ echo ""
 echo "Config directory: $(node -e "const { getConfigDir } = require('./dist/config/paths'); console.log(getConfigDir());")"
 echo ""
 echo "To start:"
-echo "  npm start             # standalone"
+echo "  pnpm start            # standalone"
 echo "  docker compose up -d  # Docker"
 echo ""
 echo "Or copy MCP config to your IDE:"

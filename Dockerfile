@@ -1,22 +1,24 @@
 FROM node:20-alpine
 
+RUN corepack enable
+
 WORKDIR /app
 
 # Copy package files
-COPY package*.json ./
+COPY package.json pnpm-lock.yaml ./
 
 # Install all dependencies (including devDependencies for build)
-RUN npm install
+RUN pnpm install --frozen-lockfile
 
 # Copy source files
 COPY tsconfig.json ./
 COPY src ./src
 
 # Build TypeScript
-RUN npm run build
+RUN pnpm run build
 
 # Remove dev dependencies to reduce image size
-RUN npm prune --production
+RUN pnpm prune --prod
 
 EXPOSE 3847
 

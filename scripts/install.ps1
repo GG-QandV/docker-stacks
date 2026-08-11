@@ -26,21 +26,21 @@ if ([int]$verParts[0] -lt 18) {
 }
 
 try {
-    $npmVer = npm --version
-    Write-Host "  npm $npmVer ✓" -ForegroundColor Green
+    $pnpmVer = pnpm --version
+    Write-Host "  pnpm $pnpmVer ✓" -ForegroundColor Green
 } catch {
-    Write-Host "ERROR: npm not found." -ForegroundColor Red
+    Write-Host "ERROR: pnpm not found. Install: npm i -g pnpm" -ForegroundColor Red
     exit 1
 }
 
-# --- npm install ---
+# --- pnpm install ---
 Write-Host "`nInstalling dependencies..." -ForegroundColor Yellow
 Set-Location $ProjectDir
-npm install
+pnpm install
 
 # --- Build ---
 Write-Host "`nBuilding TypeScript..." -ForegroundColor Yellow
-npm run build
+pnpm run build
 
 # --- Create config dir ---
 Write-Host "`nCreating config directory..." -ForegroundColor Yellow
@@ -95,6 +95,6 @@ Write-Host ""
 Write-Host "Config directory: $(node -e "const { getConfigDir } = require('./dist/config/paths'); console.log(getConfigDir());")"
 Write-Host ""
 Write-Host "To start:"
-Write-Host "  npm start"
+Write-Host "  pnpm start"
 Write-Host ""
 Write-Host "MCP config generated at: mcp.json"

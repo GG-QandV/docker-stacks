@@ -16,7 +16,7 @@
     "tunnel:start": "python3 -m cm_integration.tunnel_manager",
     "bundle:api": "ncc build src/index.ts -o dist_bundle --minify",
     "bundle:mcp": "esbuild mcp/cm_http_adapter.mjs --bundle --platform=node --format=cjs --outfile=mcp/cm_http_adapter.bundle.js && esbuild mcp/server.js --bundle --platform=node --format=cjs --outfile=mcp/server.bundle.js",
-    "bundle": "npm run bundle:api && npm run bundle:mcp"
+    "bundle": "pnpm run bundle:api && pnpm run bundle:mcp"
   },
   "dependencies": {
     "@fastify/cors": "^9.0.1",
@@ -35,5 +35,11 @@
     "esbuild": "^0.20.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
+  },
+  "packageManager": "pnpm@10.25.0",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
   }
 }

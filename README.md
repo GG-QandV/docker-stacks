@@ -148,8 +148,8 @@ brew services start qdrant
 createdb context_db
 
 # Install and run Context Manager
-npm install
-npm run dev
+pnpm install
+pnpm run dev
 ```
 
 ---
