@@ -27,9 +27,9 @@ services:
     image: ghcr.io/huggingface/text-embeddings-inference:cpu-1.8.3
     pull_policy: if_not_present
     container_name: tei-embeddings
-    shm_size: 1024m
-    mem_limit: 1536m
-    mem_reservation: 768m
+    shm_size: 256m
+    mem_limit: 700m
+    mem_reservation: 500m
     ports:
       - "8080:80"
     networks:
@@ -44,6 +44,7 @@ services:
       - OMP_WAIT_POLICY=PASSIVE
     command: >
       --model-id /data
+      --dtype float32
       --pooling mean
       --tokenization-workers 3
       --max-batch-tokens 1024
@@ -58,7 +59,7 @@ services:
     working_dir: /app
     volumes:
       - ${MCP_DIR:-./mcp}:/app:ro
-    command: node cm_http_adapter.mjs
+    command: node cm_http_adapter.bundle.js
     ports:
       - "8770:8770"
     environment:
